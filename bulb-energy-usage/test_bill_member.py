@@ -12,11 +12,27 @@ class TestMemberAccounts(unittest.TestCase):
     def test_accounts_types(self):
         assert MemberAccounts.ACCOUNTS_INITIAL == {'electricity': None, 'gas': None}
 
-    def test__init__member_id(self):
+    def test_init_member_id(self):
         member_accounts = MemberAccounts('member-123', TEST_READINGS)
         assert member_accounts.member_id == 'member-123'
 
-    #def 
+    def test_init_id_not_in_readings(self):
+        try:    
+            member_accounts = MemberAccounts('member-123', {})
+            exception = False
+        except:
+            exception = True
+        assert exception
+
+    def test_init_incorrect_accounts(self):
+        try:
+           member_accounts = MemberAccounts('member-123', {'member-123': [{'coal': []}]}) 
+           exception = False
+        except:
+            exception = True
+        assert exception
+        
+        
 
 
 class TestBillMember(unittest.TestCase):

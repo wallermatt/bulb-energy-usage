@@ -6,6 +6,11 @@ class MemberAccounts():
     
     def __init__(self, member_id, readings):
         self.member_id = member_id
+        if self.member_id not in readings:
+            raise('Member ID not in readings')
+        account_readings = readings[self.member_id]
+        
+        
 
 def calculate_bill(member_id=None, account_id=None, bill_date=None):
     readings = get_readings()
