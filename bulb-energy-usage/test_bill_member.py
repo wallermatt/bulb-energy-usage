@@ -4,7 +4,6 @@ import unittest
 from unittest.mock import patch
 
 from bill_member import calculate_bill, Member, Account, Reading
-from test_readings import TEST_READINGS
 
 
 class TestReading(unittest.TestCase):
@@ -40,7 +39,7 @@ class TestReading(unittest.TestCase):
 
 class TestAccount(unittest.TestCase):
 
-    READINGS1 =  {
+    READINGS1 =  [{
         "electricity": [
             {
                 "cumulative": 17580,
@@ -53,7 +52,7 @@ class TestAccount(unittest.TestCase):
                 "unit": "kWh"
             }
         ]
-    }
+    }]
 
     def test_init_account_id(self):
         account = Account('account-abc', self.READINGS1)
@@ -72,13 +71,35 @@ class TestAccount(unittest.TestCase):
         account = Account('account-abc', self.READINGS1)
         self.assertEqual(account.billing_readings['electricity'][0].reading_date, datetime.datetime(2017, 2, 28, 0, 0))
 
+    def test_get_month_reading_for_datetime(self):
+        account = Account('account-abc', self.READINGS1)
+        reading = account.get_month_reading_for_datetime('electricity', datetime.datetime(2017, 3, 15, 0, 0))
+        self.assertEqual(reading.reading_date, datetime.datetime(2017, 3, 28, 0, 0))
+
+    def test_get_month_reading_for_datetime_exception(self):
+        account = Account('account-abc', self.READINGS1)
+        with self.assertRaises(Exception) as context:
+            reading = account.get_month_reading_for_datetime('electricity', datetime.datetime(2020, 3, 15, 0, 0))
+
+    def test_calculate_monthly_bill_for_billing_type(self):
+        account = Account('account-abc', self.READINGS1)
+        amount, units = account.calculate_monthly_bill_for_billing_type('electricity', datetime.datetime(2017, 3, 15, 0, 0))
+        self.assertEqual(amount, 24659.36)
+        self.assertEqual(units, 2000)
+
+    def test_calculate_monthly_bill(self):
+        account = Account('account-abc', self.READINGS1)
+        amount, units = account.calculate_monthly_bill(datetime.datetime(2017, 3, 15, 0, 0))
+        self.assertEqual(amount, 24659.36)
+        self.assertEqual(units, 2000)
+
 
 class TestMember(unittest.TestCase):
 
     READINGS1 =  {
         'member-123' : [
             {
-                'account-abc' : {
+                'account-abc' : [{
                     "electricity": [
                         {
                             "cumulative": 17580,
@@ -91,7 +112,7 @@ class TestMember(unittest.TestCase):
                             "unit": "kWh"
                         }
                     ]
-                }
+                }]
             }
         ]
     }
@@ -112,24 +133,35 @@ class TestMember(unittest.TestCase):
         member = Member('member-123', self.READINGS1)
         self.assertIn('account-abc', member.accounts)
         self.assertEqual(len(member.accounts['account-abc'].billing_readings['electricity']), 2)
-        
-        
 
+    def test_calculate_monthly_bill_for_account(self):
+        member = Member('member-123', self.READINGS1)
+        amount, units = member.calculate_monthly_bill_for_account('account-abc', datetime.datetime(2017, 3, 15, 0, 0))
+        self.assertEqual(amount, 24659.36)
+        self.assertEqual(units, 2000)
+
+    def test_calculate_monthly_bill(self):
+        member = Member('member-123', self.READINGS1)
+        amount, units = member.calculate_monthly_bill(datetime.datetime(2017, 3, 15, 0, 0))
+        self.assertEqual(amount, 24659.36)
+        self.assertEqual(units, 2000)
+        
+        
 
 class TestBillMember(unittest.TestCase):
 
     @patch('bill_member.get_readings')
     def test_calculate_bill_load_readings(self, mock_get_readings):
-        _,_ = calculate_bill()
+        with self.assertRaises(Exception) as context:
+            _,_ = calculate_bill('member-123', '2017-08-31')
         assert mock_get_readings.called
 
-
-
     def test_calculate_bill_for_august(self):
-        amount, kwh = calculate_bill(member_id='member-123',
-                                     account_id='ALL',
-                                     bill_date='2017-08-31')
-        self.assertEqual(amount, 27.57)
+        amount, kwh = calculate_bill(
+            'member-123',
+            '2017-08-31'
+        )
+        self.assertEqual(amount, 27.56843)
         self.assertEqual(kwh, 167)
 
 
