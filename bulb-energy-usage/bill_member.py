@@ -1,14 +1,55 @@
+import datetime
 from load_readings import get_readings
 
 
-class MemberAccounts():
-    ACCOUNTS_INITIAL = {'electricity': None, 'gas': None}
+
+class Reading():
+
+    UNIT_TYPES = ('kWh')
+
+    def __init__(self, reading):
+        self.reading_date = datetime.datetime.strptime(reading['readingDate'][0:10], "%Y-%m-%d")
+        self.cumulative = reading['cumulative']
+        if reading['unit'] not in self.UNIT_TYPES:
+            raise('Incorrect unit type')
+        self.unit = reading['unit']
+        
+
+class Account():
+
+    BILLING_TYPES = ('electricity', 'gas')
+
+    def __init__(self, account_id, readings):
+        self.account_id = account_id
+        self.billing_readings = {}
+        for billing_readings in readings[self.account_id]:
+            billing_type = list(billing_readings.keys())[0]
+            if  billing_type not in self.BILLING_TYPES:
+                raise('Incorrect billing type')
+            self.billing_readings[billing_type] = self.create_readings_from_billing_readings(billing_readings[billing_type])
+
+    def create_readings_from_billing_readings(self, billing_readings):
+        billing_readings_list = []
+        for reading in billing_readings:
+            billing_readings_list.append(Reading(reading))
+        return sorted(billing_readings_list, key = lambda i: i.reading_date)
+
+
+class Member():
     
     def __init__(self, member_id, readings):
         self.member_id = member_id
         if self.member_id not in readings:
             raise('Member ID not in readings')
-        account_readings = readings[self.member_id]
+        self.accounts = self.create_accounts_from_readings(readings[self.member_id])
+
+    def create_accounts_from_readings(self, member_readings):
+        account_dict = {}
+        for account in member_readings:
+            account_id = list(account.keys())[0]
+            account_dict[account_id] = Account(account_id, account)
+        return account_dict
+
         
         
 
