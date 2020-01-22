@@ -37,6 +37,7 @@ class TestReading(unittest.TestCase):
         with self.assertRaises(Exception) as context:
             reading = Reading(self.INVALID_READING1)
 
+
 class TestAccount(unittest.TestCase):
 
     READINGS1 =  {
@@ -45,23 +46,59 @@ class TestAccount(unittest.TestCase):
                 "cumulative": 17580,
                 "readingDate": "2017-03-28T00:00:00.000Z",
                 "unit": "kWh"
+            },
+            {
+                "cumulative": 15580,
+                "readingDate": "2017-02-28T00:00:00.000Z",
+                "unit": "kWh"
             }
         ]
     }
 
-    def test_init
+    def test_init_account_id(self):
+        account = Account('account-abc', self.READINGS1)
+        self.assertEqual(account.account_id, 'account-abc')
+
+    def test_init_billing_readings_len(self):
+        account = Account('account-abc', self.READINGS1)
+        self.assertEqual(len(account.billing_readings['electricity']), 2)
+
+    def test_init_billing_readings_instance(self):
+        account = Account('account-abc', self.READINGS1)
+        self.assertIsInstance(account.billing_readings['electricity'][0], Reading)
+        self.assertIsInstance(account.billing_readings['electricity'][1], Reading)
+
+    def test_init_billing_readings_sort(self):
+        account = Account('account-abc', self.READINGS1)
+        self.assertEqual(account.billing_readings['electricity'][0].reading_date, datetime.datetime(2017, 2, 28, 0, 0))
+
 
 class TestMember(unittest.TestCase):
 
-    '''
-    def test_accounts_types(self):
-        assert Member.ACCOUNTS_INITIAL == {'electricity': None, 'gas': None}
-    '''
-
+    READINGS1 =  {
+        'member-123' : [
+            {
+                'account-abc' : {
+                    "electricity": [
+                        {
+                            "cumulative": 17580,
+                            "readingDate": "2017-03-28T00:00:00.000Z",
+                            "unit": "kWh"
+                        },
+                        {
+                            "cumulative": 15580,
+                            "readingDate": "2017-02-28T00:00:00.000Z",
+                            "unit": "kWh"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
 
     def test_init_member_id(self):
-        member = Member('member-123', TEST_READINGS)
-        assert member.member_id == 'member-123'
+        member = Member('member-123', self.READINGS1)
+        self.assertEqual(member.member_id, 'member-123')
 
     def test_init_id_not_in_readings(self):
         with self.assertRaises(Exception) as context:
@@ -69,14 +106,12 @@ class TestMember(unittest.TestCase):
 
     def test_init_member_accounts(self):
         member = Member('member-123', {'member-123': [{'account-abc': []}]})
-        assert 'account-abc' in member.accounts
+        self.assertIn('account-abc', member.accounts)
 
-    '''
-    def test_init_incorrect_accounts(self):
-
-        with self.assertRaises(Exception) as context:
-            member_accounts = MemberAccounts('member-123', {'member-123': [{'coal': []}]})
-    '''    
+    def test_init_accounts(self):
+        member = Member('member-123', self.READINGS1)
+        self.assertIn('account-abc', member.accounts)
+        self.assertEqual(len(member.accounts['account-abc'].billing_readings['electricity']), 2)
         
         
 

@@ -22,11 +22,10 @@ class Account():
     def __init__(self, account_id, readings):
         self.account_id = account_id
         self.billing_readings = {}
-        for billing_readings in readings[self.account_id]:
-            billing_type = list(billing_readings.keys())[0]
+        for billing_type in readings:
             if  billing_type not in self.BILLING_TYPES:
                 raise('Incorrect billing type')
-            self.billing_readings[billing_type] = self.create_readings_from_billing_readings(billing_readings[billing_type])
+            self.billing_readings[billing_type] = self.create_readings_from_billing_readings(readings[billing_type])
 
     def create_readings_from_billing_readings(self, billing_readings):
         billing_readings_list = []
@@ -47,7 +46,7 @@ class Member():
         account_dict = {}
         for account in member_readings:
             account_id = list(account.keys())[0]
-            account_dict[account_id] = Account(account_id, account)
+            account_dict[account_id] = Account(account_id, account[account_id])
         return account_dict
 
         
