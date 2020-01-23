@@ -1,3 +1,41 @@
+Matthew Waller 
+
+Installation
+============
+
+pip install -r requirements.txt
+
+(I installed one extra module - python-dateutil)
+
+
+Changes
+=======
+I modified the call for calculate_bill so that as per the instructions the only
+optional argument is account, and it is the right-most argument. Because of 
+this I also had to change the call for this function in calculate_and_print_bill.
+
+
+Further work
+============
+
+If I had more time I would:
+
+1. Create custom exceptions where exceptions are raised by my code.
+2. Explicitly reference these custom exceptions in the tests.
+3. Write tests for gas as well as electricity.
+4. Write tests for more edge cases.
+5. Store readings in a dictionary with reading_date as the key
+   (rather than the list they're stored in at the moment)
+
+
+
+
+
+
+
+Original Instructions
+=====================
+
 For this challenge you CANNOT edit the following files which are provided to you.
 
 readings.json
